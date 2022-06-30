@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from os import environ
 from dotenv import load_dotenv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,8 +49,9 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "cloudinary_storage",
     "django.contrib.staticfiles",
-    # Third Party
+    "cloudinary",
     # Local
     "blog",
 ]
@@ -69,7 +71,7 @@ ROOT_URLCONF = "codestar.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [TEMPLATES_DIR],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -88,12 +90,15 @@ WSGI_APPLICATION = "codestar.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if environ.get("DEVELOPMENT_ENV"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
+else:
+    DATABASES = {"default": dj_database_url.parse(environ.get("DATABASE_URL"))}
 
 
 # Password validation
@@ -130,9 +135,18 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
+# Linking to cloudinary
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = "/static/"
+STATICFILES_STORGAE = (
+    "cloudinary_storage.storage.StaticHashedCloudinaryStorage"
+)
+STATICFILES_DIR = [Path.joinpath(BASE_DIR, "static")]
+STATIC_ROOT = Path.joinpath(BASE_DIR, "staticfiles")
+
+MEDIA_URL = "/media/"
+DEFAULT_FILE_STORGAE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
